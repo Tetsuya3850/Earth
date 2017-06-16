@@ -12,7 +12,7 @@ renderer.setSize(WIDTH, HEIGHT);
 
 container.appendChild(renderer.domElement);
 
-var light = new THREE.SpotLight(0xFFFFFF, 1, 0, Math.PI / 2, 1);
+var light = new THREE.DirectionalLight(0xFFFFFF, 1, 0, Math.PI / 2, 1);
 light.position.set(4000, 4000, 1500);
 light.target.position.set (1000, 3800, 1000);
 scene.add(light);
