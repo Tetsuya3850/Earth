@@ -25,7 +25,8 @@ earthMat.map=loader.load('images/earthmap1k.jpg');
 
 var earthMesh = new THREE.Mesh(earthGeo, earthMat);
 earthMesh.position.set(-100, 0, 0);
-earthMesh.rotation.y=5;
+earthMesh.rotation.y=3.7;
+earthMesh.rotation.z=0.5;
 
 scene.add(earthMesh);
 
