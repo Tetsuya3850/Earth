@@ -7,7 +7,6 @@
     <script src="stats.min.js"></script>
     <style>
         body {
-            /* set margin to 0 and overflow to hidden, to go fullscreen */
             margin: 0;
             overflow: hidden;
         }
@@ -64,27 +63,21 @@
         // add controls
         cameraControl = new THREE.OrbitControls(camera);
 
-
-        // setup the control object for the control gui
         control = new function () {
             this.rotationSpeed = 0.001;
         };
 
-        // add extras
         addStatsObject();
 
 
-        // add the output of the renderer to the html element
         document.body.appendChild(renderer.domElement);
 
-        // call the render function, after the first render, interval is determined
-        // by requestAnimationFrame
         render();
     }
 
     function createEarthMaterial() {
-        // 4096 is the maximum width for maps
-        var earthTexture = THREE.ImageUtils.loadTexture("./images/earthmap4k.jpg");
+      loader = new THREE.TextureLoader();
+      var earthTexture = loader.load('./images/earthmap4k.jpg')
 
         var earthMaterial = new THREE.MeshBasicMaterial();
         earthMaterial.map = earthTexture;
@@ -93,7 +86,8 @@
     }
 
     function createCloudMaterial() {
-        var cloudTexture = THREE.ImageUtils.loadTexture("./images/fair_clouds_4k.png");
+      loader = new THREE.TextureLoader();
+      var cloudTexture = loader.load('./images/fair_clouds_4k.png')
 
         var cloudMaterial = new THREE.MeshBasicMaterial();
         cloudMaterial.map = cloudTexture;
