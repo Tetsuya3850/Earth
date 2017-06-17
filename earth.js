@@ -22,13 +22,27 @@ function init() {
 
   earthGeo = new THREE.SphereGeometry (30, 40, 400)
   earthMat = new THREE.MeshPhongMaterial();
-  loader = new THREE.TextureLoader();
-  earthMat.map=loader.load('images/earthmap1k.jpg', render);
   earthMesh = new THREE.Mesh(earthGeo, earthMat);
   earthMesh.position.set(-100, 0, 0);
   earthMesh.rotation.y=3.7;
   earthMesh.rotation.z=0.5;
   scene.add(earthMesh);
+
+  loader = new THREE.TextureLoader();
+  loader.load('images/earthmap1k.jpg',
+    // Function when resource is loaded
+  	function ( texture ) {
+  		// do something with the texture
+  		earthMat.map = texture
+  	},
+  	// Function called when download progresses
+  	function ( xhr ) {
+  		console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+  	},
+  	// Function called when download errors
+  	function ( xhr ) {
+  		console.log( 'An error happened' );
+  	});
 
   camera.lookAt( earthMesh.position );
 
@@ -50,11 +64,9 @@ function animate() {
    requestAnimationFrame(animate);
    render();
 }
-
 function render() {
    earthMesh.rotation.y += 0.001;
    renderer.render(scene, camera);
 }
-
 animate();
 */
