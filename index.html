@@ -78,8 +78,8 @@ function createEarthMaterial() {
   video.play();
 
   videoImage = document.createElement("canvas");
-  videoImage.width = 4096;
-  videoImage.height = 2048;
+  videoImage.width = 1024;
+  videoImage.height = 512;
 
   videoImageContext = videoImage.getContext("2d");
   // background color if no video present
@@ -91,8 +91,7 @@ function createEarthMaterial() {
   videoTexture.magFilter = THREE.LinearFilter;
 
   var earthMaterial = new THREE.MeshBasicMaterial({
-    map: videoTexture,
-    side: THREE.DoubleSide
+    map: videoTexture
   });
 
   return earthMaterial;
