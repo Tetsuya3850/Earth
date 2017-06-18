@@ -41,7 +41,7 @@ function init() {
   renderer = new THREE.WebGLRenderer();
   renderer.setClearColor(0x000000, 1.0);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMapEnabled = true;
+  renderer.shadowMap.Enabled = true;
 
   // create a sphere
   var sphereGeometry = new THREE.SphereGeometry(15, 60, 60);
@@ -50,8 +50,14 @@ function init() {
   earthMesh.name = "earth";
   scene.add(earthMesh);
 
+  var overlayGeometry = new THREE.SphereGeometry(15, 60, 60);
+  var overlayMaterial = createOverlayMaterial();
+  var overlayMesh = new THREE.Mesh(overlayGeometry, overlayMaterial);
+  overlayMesh.name = "overlay";
+  scene.add(overlayMesh);
+
   // create a cloudGeometry, slighly bigger than the original sphere
-  var cloudGeometry = new THREE.SphereGeometry(15.25, 60, 60);
+  var cloudGeometry = new THREE.SphereGeometry(15.2, 60, 60);
   var cloudMaterial = createCloudMaterial();
   var cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
   cloudMesh.name = "clouds";
@@ -98,6 +104,77 @@ function createCloudMaterial() {
   return cloudMaterial;
 }
 
+function createOverlayMaterial() {
+  var olMaterial = new THREE.MeshPhongMaterial();
+  olMaterial.map = new THREE.Texture(addCanvas());
+  olMaterial.transparent = true;
+  olMaterial.opacity = 0.6;
+  return olMaterial;
+}
+
+function addCanvas() {
+  canvas = document.createElement("canvas");
+  canvas.width = 4096;
+  canvas.height = 2048;
+
+  var context = canvas.getContext("2d");
+
+  monthlySearch(data => {
+    data.forEach(function(e) {
+      var posX = parseFloat(e[0]);
+      var posY = parseFloat(e[1]);
+
+      var x2 = 4096 / 360.0 * (180 + posX);
+      var y2 = 2048 / 180.0 * (90 - posY);
+
+      context.beginPath();
+      context.arc(x2, y2, 40, 0, 2 * Math.PI, false);
+      context.fillStyle = "yellow";
+      context.fill();
+
+      context.fill();
+      context.lineWidth = 2;
+      context.strokeStyle = "yellow";
+      context.stroke();
+    });
+  });
+
+  return canvas;
+}
+
+function monthlySearch(cb) {
+  return fetch(
+    `https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson`,
+    {
+      accept: "application/json"
+    }
+  )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then(extractLocation)
+    .then(cb);
+}
+
+function checkStatus(response) {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  } else {
+    const error = new Error(`HTTP Error ${response.statusText}`);
+    error.status = response.statusText;
+    error.response = response;
+    console.log(error); // eslint-disable-line no-console
+    throw error;
+  }
+}
+
+function parseJSON(response) {
+  return response.json();
+}
+
+function extractLocation(response) {
+  return response.features.map(feature => feature.geometry.coordinates);
+}
+
 function addStatsObject() {
   stats = new Stats();
   stats.setMode(0);
@@ -114,6 +191,8 @@ function addStatsObject() {
      * for future renders
      */
 function render() {
+  scene.getObjectByName("overlay").material.map.needsUpdate = true;
+
   // update stats
   stats.update();
 
@@ -121,6 +200,7 @@ function render() {
   cameraControl.update();
 
   scene.getObjectByName("earth").rotation.y += control.rotationSpeed;
+  scene.getObjectByName("overlay").rotation.y += control.rotationSpeed;
   scene.getObjectByName("clouds").rotation.y += control.rotationSpeed * 1.1;
 
   // and render the scene
