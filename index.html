@@ -199,9 +199,9 @@ function render() {
   // update the camera
   cameraControl.update();
 
-  scene.getObjectByName("earth").rotation.y += control.rotationSpeed;
-  scene.getObjectByName("overlay").rotation.y += control.rotationSpeed;
-  scene.getObjectByName("clouds").rotation.y += control.rotationSpeed * 1.1;
+  // scene.getObjectByName("earth").rotation.y += control.rotationSpeed;
+  // scene.getObjectByName("overlay").rotation.y += control.rotationSpeed;
+  // scene.getObjectByName("clouds").rotation.y += control.rotationSpeed * 1.1;
 
   // and render the scene
   renderer.render(scene, camera);
