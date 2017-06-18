@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>02.02 - Basic textures</title>
+    <title>EarthCloudEarthquake</title>
     <script src="three.js"></script>
     <script src="OrbitControls.js"></script>
     <script src="stats.min.js"></script>
@@ -105,7 +105,7 @@ function createCloudMaterial() {
 }
 
 function createOverlayMaterial() {
-  var olMaterial = new THREE.MeshPhongMaterial();
+  var olMaterial = new THREE.MeshBasicMaterial();
   olMaterial.map = new THREE.Texture(addCanvas());
   olMaterial.transparent = true;
   olMaterial.opacity = 0.6;
@@ -128,7 +128,7 @@ function addCanvas() {
       var y2 = 2048 / 180.0 * (90 - posY);
 
       context.beginPath();
-      context.arc(x2, y2, 40, 0, 2 * Math.PI, false);
+      context.arc(x2, y2, 8, 0, 2 * Math.PI, false);
       context.fillStyle = "yellow";
       context.fill();
 
@@ -144,7 +144,7 @@ function addCanvas() {
 
 function monthlySearch(cb) {
   return fetch(
-    `https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson`,
+    `https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson`,
     {
       accept: "application/json"
     }
