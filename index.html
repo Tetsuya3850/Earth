@@ -20,6 +20,7 @@ var camera;
 var control;
 var stats;
 var cameraControl;
+var video, videoImage, videoImageContext, videoTexture;
 
 /**
      * Initializes the scene, camera and objects. Called when the window is
@@ -50,19 +51,6 @@ function init() {
   earthMesh.name = "earth";
   scene.add(earthMesh);
 
-  var overlayGeometry = new THREE.SphereGeometry(15, 60, 60);
-  var overlayMaterial = createOverlayMaterial();
-  var overlayMesh = new THREE.Mesh(overlayGeometry, overlayMaterial);
-  overlayMesh.name = "overlay";
-  scene.add(overlayMesh);
-
-  // create a cloudGeometry, slighly bigger than the original sphere
-  var cloudGeometry = new THREE.SphereGeometry(15.2, 60, 60);
-  var cloudMaterial = createCloudMaterial();
-  var cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
-  cloudMesh.name = "clouds";
-  scene.add(cloudMesh);
-
   // position and point the camera to the center of the scene
   camera.position.x = 25;
   camera.position.y = 26;
@@ -84,95 +72,30 @@ function init() {
 }
 
 function createEarthMaterial() {
-  loader = new THREE.TextureLoader();
-  var earthTexture = loader.load("./images/earthmap4k.jpg");
+  video = document.createElement("video");
+  video.src = "sst2017.mp4";
+  video.load(); // must call after setting/changing source
+  video.play();
 
-  var earthMaterial = new THREE.MeshBasicMaterial();
-  earthMaterial.map = earthTexture;
+  videoImage = document.createElement("canvas");
+  videoImage.width = 4096;
+  videoImage.height = 2048;
 
-  return earthMaterial;
-}
+  videoImageContext = videoImage.getContext("2d");
+  // background color if no video present
+  videoImageContext.fillStyle = "#000000";
+  videoImageContext.fillRect(0, 0, videoImage.width, videoImage.height);
 
-function createCloudMaterial() {
-  loader = new THREE.TextureLoader();
-  var cloudTexture = loader.load("./images/fair_clouds_4k.png");
+  videoTexture = new THREE.Texture(videoImage);
+  videoTexture.minFilter = THREE.LinearFilter;
+  videoTexture.magFilter = THREE.LinearFilter;
 
-  var cloudMaterial = new THREE.MeshBasicMaterial();
-  cloudMaterial.map = cloudTexture;
-  cloudMaterial.transparent = true;
-
-  return cloudMaterial;
-}
-
-function createOverlayMaterial() {
-  var olMaterial = new THREE.MeshBasicMaterial();
-  olMaterial.map = new THREE.Texture(addCanvas());
-  olMaterial.transparent = true;
-  olMaterial.opacity = 0.6;
-  return olMaterial;
-}
-
-function addCanvas() {
-  canvas = document.createElement("canvas");
-  canvas.width = 4096;
-  canvas.height = 2048;
-
-  var context = canvas.getContext("2d");
-
-  monthlySearch(data => {
-    data.forEach(function(e) {
-      var posX = parseFloat(e[0]);
-      var posY = parseFloat(e[1]);
-
-      var x2 = 4096 / 360.0 * (180 + posX);
-      var y2 = 2048 / 180.0 * (90 - posY);
-
-      context.beginPath();
-      context.arc(x2, y2, 8, 0, 2 * Math.PI, false);
-      context.fillStyle = "yellow";
-      context.fill();
-
-      context.fill();
-      context.lineWidth = 2;
-      context.strokeStyle = "yellow";
-      context.stroke();
-    });
+  var earthMaterial = new THREE.MeshBasicMaterial({
+    map: videoTexture,
+    side: THREE.DoubleSide
   });
 
-  return canvas;
-}
-
-function monthlySearch(cb) {
-  return fetch(
-    `https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_month.geojson`,
-    {
-      accept: "application/json"
-    }
-  )
-    .then(checkStatus)
-    .then(parseJSON)
-    .then(extractLocation)
-    .then(cb);
-}
-
-function checkStatus(response) {
-  if (response.status >= 200 && response.status < 300) {
-    return response;
-  } else {
-    const error = new Error(`HTTP Error ${response.statusText}`);
-    error.status = response.statusText;
-    error.response = response;
-    console.log(error); // eslint-disable-line no-console
-    throw error;
-  }
-}
-
-function parseJSON(response) {
-  return response.json();
-}
-
-function extractLocation(response) {
-  return response.features.map(feature => feature.geometry.coordinates);
+  return earthMaterial;
 }
 
 function addStatsObject() {
@@ -191,10 +114,13 @@ function addStatsObject() {
      * for future renders
      */
 function render() {
-  scene.getObjectByName("overlay").material.map.needsUpdate = true;
-
   // update stats
   stats.update();
+
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    videoImageContext.drawImage(video, 0, 0);
+    if (videoTexture) videoTexture.needsUpdate = true;
+  }
 
   // update the camera
   cameraControl.update();
